@@ -1,0 +1,12 @@
+[project]
+name = "offpolicy"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "accelerate>=0.27",
+    "datasets>=2.17",
+    "peft>=0.10",
+    "transformers>=4.38",
+]

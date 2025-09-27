@@ -1,0 +1,4 @@
+transformers>=4.38
+datasets>=2.17
+accelerate>=0.27
+peft>=0.10

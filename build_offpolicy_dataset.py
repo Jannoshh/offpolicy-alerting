@@ -12,6 +12,7 @@ from typing import Iterable, List, Sequence
 
 import torch
 from datasets import load_dataset
+from tqdm.auto import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from constants import ALERT_RESPONSE
@@ -52,7 +53,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--injection_model",
-        default="Qwen/Qwen3-0.5B-Instruct",
+        default="Qwen/Qwen3-4B-Instruct-2507",
         help="Secondary model used to synthesize off-policy injections.",
     )
     parser.add_argument(
@@ -240,8 +241,16 @@ def build_samples(args: argparse.Namespace) -> List[ConversationSample]:
     policy_model, policy_tokenizer = load_causal_lm(args.policy_model, device)
     injection_model, injection_tokenizer = load_causal_lm(args.injection_model, device)
 
+    total_problems = len(dataset)
+    if args.max_samples is not None:
+        total_problems = min(total_problems, args.max_samples)
+
     samples: List[ConversationSample] = []
-    for question in iter_problems(dataset, DEFAULT_PROBLEM_FIELD, args.max_samples):
+    for question in tqdm(
+        iter_problems(dataset, DEFAULT_PROBLEM_FIELD, args.max_samples),
+        total=total_problems,
+        desc="Generating samples",
+    ):
         policy_prompt = build_policy_prompt(question, args.policy_prompt)
         policy_answer = generate_text(
             model=policy_model,

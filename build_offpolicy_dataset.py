@@ -236,6 +236,15 @@ def iter_problems(dataset, field: str, limit: int | None) -> Iterable[str]:
 def build_samples(args: argparse.Namespace) -> List[ConversationSample]:
     set_seed(args.seed)
     device = torch.device(args.device)
+    if device.type == "cuda" and not torch.cuda.is_available():
+        raise SystemExit("CUDA device requested but torch.cuda.is_available() is False. Check GPU setup.")
+    if device.type == "cuda":
+        if device.index is not None:
+            torch.cuda.set_device(device.index)
+            device_idx = device.index
+        else:
+            device_idx = torch.cuda.current_device()
+        print(f"Using CUDA device: {torch.cuda.get_device_name(device_idx)}")
 
     dataset = load_dataset(DEFAULT_MATH_DATASET, DEFAULT_MATH_CONFIG, split=args.math_split)
     policy_model, policy_tokenizer = load_causal_lm(args.policy_model, device)
